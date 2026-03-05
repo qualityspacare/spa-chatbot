@@ -197,7 +197,7 @@ app.post('/predict', async (req, res) => {
   try {
     // ── Call Claude ──────────────────────────────────────────────────────────
     const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',          // Fast + affordable; change to claude-sonnet-4-5-20250929 for more power
+      model: 'claude-haiku-4-5-20251001',  // Fast + affordable; change to claude-sonnet-4-5-20250929 for more power
       max_tokens: 600,                    // Slightly higher to allow room for the LEAD_CAPTURED tag
       system: SYSTEM_PROMPT,
       messages: session.messages,         // Full conversation history for this session
