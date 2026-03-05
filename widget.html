@@ -1,0 +1,490 @@
+<!-- ============================================================
+     Quality Spa Care and Repair — Chat Widget
+     Paste this entire block into a Squarespace Code Block
+     Replace YOUR_RENDER_URL_HERE with your actual Render URL
+     ============================================================ -->
+
+<style>
+  /* ── Chat Button (bubble in bottom-right corner) ── */
+  #qsc-chat-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a7fa8, #0d5c7a);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  #qsc-chat-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.32);
+  }
+  #qsc-chat-btn svg { width: 28px; height: 28px; fill: white; }
+
+  /* ── Notification dot (shows before first open) ── */
+  #qsc-notif-dot {
+    position: fixed;
+    bottom: 72px;
+    right: 22px;
+    width: 14px;
+    height: 14px;
+    background: #e74c3c;
+    border-radius: 50%;
+    z-index: 100000;
+    border: 2px solid white;
+    display: block;
+  }
+
+  /* ── Chat Window ── */
+  #qsc-chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 520px;
+    max-height: calc(100vh - 120px);
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 99998;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    animation: qsc-slide-up 0.25s ease;
+  }
+  @keyframes qsc-slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Header ── */
+  #qsc-header {
+    background: linear-gradient(135deg, #1a7fa8, #0d5c7a);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  #qsc-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  #qsc-header-text { flex: 1; }
+  #qsc-header-name {
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.2;
+  }
+  #qsc-header-sub {
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    margin: 2px 0 0 0;
+  }
+  #qsc-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  #qsc-close-btn:hover { color: white; }
+
+  /* ── Messages Area ── */
+  #qsc-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f4f8fb;
+  }
+  #qsc-messages::-webkit-scrollbar { width: 4px; }
+  #qsc-messages::-webkit-scrollbar-thumb { background: #c5d8e4; border-radius: 4px; }
+
+  /* ── Individual Messages ── */
+  .qsc-msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 88%;
+    animation: qsc-msg-in 0.18s ease;
+  }
+  @keyframes qsc-msg-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .qsc-msg.bot  { align-self: flex-start; }
+  .qsc-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .qsc-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .qsc-msg.bot  .qsc-bubble {
+    background: white;
+    color: #1a1a2e;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .qsc-msg.user .qsc-bubble {
+    background: linear-gradient(135deg, #1a7fa8, #0d5c7a);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  /* ── Typing indicator ── */
+  #qsc-typing {
+    display: none;
+    align-self: flex-start;
+    background: white;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  #qsc-typing span {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: #1a7fa8;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: qsc-bounce 1.2s infinite;
+  }
+  #qsc-typing span:nth-child(2) { animation-delay: 0.2s; }
+  #qsc-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes qsc-bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40%           { transform: translateY(-6px); }
+  }
+
+  /* ── Input Area ── */
+  #qsc-input-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid #e8eff4;
+    background: white;
+    flex-shrink: 0;
+    align-items: flex-end;
+  }
+  #qsc-input {
+    flex: 1;
+    border: 1.5px solid #d0e4ee;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    max-height: 90px;
+    overflow-y: auto;
+    line-height: 1.4;
+    color: #1a1a2e;
+    background: #f4f8fb;
+    transition: border-color 0.2s;
+  }
+  #qsc-input:focus { border-color: #1a7fa8; background: white; }
+  #qsc-input::placeholder { color: #aabbc8; }
+
+  /* ── Quick Reply Buttons ── */
+  #qsc-quick-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 14px 10px 14px;
+    align-self: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    animation: qsc-msg-in 0.2s ease;
+  }
+  .qsc-quick-btn {
+    background: white;
+    border: 1.5px solid #1a7fa8;
+    color: #1a7fa8;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+  }
+  .qsc-quick-btn:hover {
+    background: #1a7fa8;
+    color: white;
+  }
+
+  #qsc-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a7fa8, #0d5c7a);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, opacity 0.15s;
+  }
+  #qsc-send-btn:hover  { transform: scale(1.08); }
+  #qsc-send-btn:active { transform: scale(0.95); }
+  #qsc-send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  #qsc-send-btn svg { width: 17px; height: 17px; fill: white; }
+
+  /* ── Powered-by footer ── */
+  #qsc-footer {
+    text-align: center;
+    font-size: 10px;
+    color: #b0c4ce;
+    padding: 4px 0 8px;
+    background: white;
+  }
+</style>
+
+<!-- Chat bubble button -->
+<button id="qsc-chat-btn" aria-label="Open chat">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+  </svg>
+</button>
+
+<!-- Red notification dot -->
+<div id="qsc-notif-dot"></div>
+
+<!-- Chat window -->
+<div id="qsc-chat-window" role="dialog" aria-label="Quality Spa Care chat">
+
+  <!-- Header -->
+  <div id="qsc-header">
+    <div id="qsc-avatar">🛁</div>
+    <div id="qsc-header-text">
+      <p id="qsc-header-name">Quality Spa Care</p>
+      <p id="qsc-header-sub">Ask me anything — I usually reply instantly!</p>
+    </div>
+    <button id="qsc-close-btn" aria-label="Close chat">✕</button>
+  </div>
+
+  <!-- Messages -->
+  <div id="qsc-messages">
+    <!-- Typing indicator -->
+    <div id="qsc-typing"><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- Quick reply buttons (shown after greeting, hidden once used) -->
+  <div id="qsc-quick-replies" style="display:none;">
+    <button class="qsc-quick-btn" data-msg="Is this for a rental property?">🏠 Is this for a rental property?</button>
+    <button class="qsc-quick-btn" data-msg="Is this for a personal hot tub?">🛁 Is this for a personal hot tub?</button>
+    <button class="qsc-quick-btn" data-msg="I'm looking for a repair.">🔧 I'm looking for a repair</button>
+  </div>
+
+  <!-- Input -->
+  <div id="qsc-input-area">
+    <textarea
+      id="qsc-input"
+      placeholder="Type a message…"
+      rows="1"
+      aria-label="Type your message"
+    ></textarea>
+    <button id="qsc-send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="qsc-footer">Powered by Quality Spa Care AI</div>
+</div>
+
+<script>
+(function () {
+
+  // ── CONFIG — replace this with your real Render URL ──────────────────────
+  var APP_URL = 'https://spa-chatbot.onrender.com';
+  // Example: var APP_URL = 'https://spa-chatbot.onrender.com';
+  // ─────────────────────────────────────────────────────────────────────────
+
+  var GREETING = "Hey there! 👋 Welcome to Quality Spa Care and Repair. I can tell you about our maintenance plans, pricing, service areas, or repairs — and if you're interested, I can pass your info along to Brad so he can reach out personally. What can I help you with today?";
+
+  // Generate a unique session ID for this visitor
+  var sessionId = 'qsc-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+
+  var chatWindow    = document.getElementById('qsc-chat-window');
+  var chatBtn       = document.getElementById('qsc-chat-btn');
+  var closeBtn      = document.getElementById('qsc-close-btn');
+  var messagesDiv   = document.getElementById('qsc-messages');
+  var inputEl       = document.getElementById('qsc-input');
+  var sendBtn       = document.getElementById('qsc-send-btn');
+  var typingEl      = document.getElementById('qsc-typing');
+  var notifDot      = document.getElementById('qsc-notif-dot');
+  var quickReplies  = document.getElementById('qsc-quick-replies');
+
+  var isOpen      = false;
+  var hasOpened   = false;
+  var isBusy      = false;
+
+  // If visitor already dismissed the chat this session, don't auto-open again
+  var dismissed = sessionStorage.getItem('qsc-dismissed') === 'true';
+
+  // ── Open / Close ──────────────────────────────────────────────────────────
+
+  function openChat() {
+    isOpen = true;
+    chatWindow.style.display = 'flex';
+    notifDot.style.display   = 'none';
+    inputEl.focus();
+
+    if (!hasOpened) {
+      hasOpened = true;
+      // Show greeting then quick reply buttons after a short natural delay
+      setTimeout(function () {
+        addBotMessage(GREETING);
+        setTimeout(function () {
+          quickReplies.style.display = 'flex';
+          scrollToBottom();
+        }, 300);
+      }, 500);
+    }
+  }
+
+  function closeChat() {
+    isOpen = false;
+    chatWindow.style.display = 'none';
+    // Remember they closed it so it won't pop back open if they navigate
+    sessionStorage.setItem('qsc-dismissed', 'true');
+    dismissed = true;
+  }
+
+  chatBtn.addEventListener('click', function () {
+    isOpen ? closeChat() : openChat();
+  });
+  closeBtn.addEventListener('click', closeChat);
+
+  // ── Auto-open after 3 seconds (only if visitor hasn't dismissed it yet) ──
+  if (!dismissed) {
+    setTimeout(function () {
+      if (!isOpen) openChat();
+    }, 3000);
+  }
+
+  // ── Add messages to the window ────────────────────────────────────────────
+
+  function addMessage(text, role) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'qsc-msg ' + role;
+
+    var bubble = document.createElement('div');
+    bubble.className = 'qsc-bubble';
+    bubble.textContent = text;
+
+    wrapper.appendChild(bubble);
+    messagesDiv.insertBefore(wrapper, typingEl);
+    scrollToBottom();
+  }
+
+  function addBotMessage(text) { addMessage(text, 'bot');  }
+  function addUserMessage(text) { addMessage(text, 'user'); }
+
+  function scrollToBottom() {
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  function showTyping()  {
+    typingEl.style.display = 'flex';
+    scrollToBottom();
+  }
+  function hideTyping()  { typingEl.style.display = 'none'; }
+
+  // ── Send a message ────────────────────────────────────────────────────────
+
+  function sendMessage() {
+    var text = inputEl.value.trim();
+    if (!text || isBusy) return;
+
+    addUserMessage(text);
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    isBusy = true;
+    sendBtn.disabled = true;
+    showTyping();
+
+    fetch(APP_URL + '/predict', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sessionId: sessionId, message: text }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      hideTyping();
+      addBotMessage(data.text || "Sorry, I didn't catch that — could you try again?");
+    })
+    .catch(function () {
+      hideTyping();
+      addBotMessage("Sorry, I'm having a little trouble connecting right now. Please try again in a moment!");
+    })
+    .finally(function () {
+      isBusy = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    });
+  }
+
+  // ── Quick reply button clicks ─────────────────────────────────────────────
+
+  quickReplies.querySelectorAll('.qsc-quick-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var msg = btn.getAttribute('data-msg');
+      quickReplies.style.display = 'none'; // Hide buttons after one is picked
+      inputEl.value = msg;
+      sendMessage();
+    });
+  });
+
+  // ── Send on button click or Enter key ─────────────────────────────────────
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Auto-resize textarea as user types
+  inputEl.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 90) + 'px';
+  });
+
+})();
+</script>

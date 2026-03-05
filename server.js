@@ -1,6 +1,6 @@
 // server.js
 // Quality Spa Care and Repair — AI Chatbot Backend
-// Node.js + Express + Anthropic Claude + Twilio Lead Capture
+// Node.js + Express + Anthropic Claude + Telegram Lead Capture
 
 require('dotenv').config();
 
@@ -8,7 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
 const { SYSTEM_PROMPT } = require('./systemPrompt');
-const { sendLeadSMS, isTwilioConfigured } = require('./twilioHelper');
+const { sendLeadToTelegram, isTelegramConfigured } = require('./telegramHelper');
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -157,7 +157,7 @@ app.get('/', (req, res) => {
     service: 'Quality Spa Care Chatbot API',
     version: '2.0.0',
     activeSessions: sessions.size,
-    twilioConfigured: isTwilioConfigured(),
+    telegramConfigured: isTelegramConfigured(),
   });
 });
 
@@ -213,9 +213,9 @@ app.post('/predict', async (req, res) => {
         session.leadCaptured = true; // Mark session so we don't double-send
         console.log(`🎯  Lead captured! Name: ${lead.name} | Phone: ${lead.phone} | City: ${lead.city}`);
 
-        // Fire SMS to owner — non-blocking, we don't await this before responding
-        sendLeadSMS(lead).catch(err =>
-          console.error('SMS send failed (non-fatal):', err.message)
+        // Fire to Telegram — non-blocking, we don't await this before responding
+        sendLeadToTelegram(lead).catch(err =>
+          console.error('Telegram send failed (non-fatal):', err.message)
         );
       }
     }
@@ -260,5 +260,5 @@ app.listen(PORT, () => {
   console.log(`\n🚀  Quality Spa Care Chatbot API running on port ${PORT}`);
   console.log(`🌐  CORS allowed origin: ${ALLOWED_ORIGIN}`);
   console.log(`🔑  Anthropic API key:   ${ANTHROPIC_API_KEY ? '✅ loaded' : '❌ MISSING'}`);
-  console.log(`📱  Twilio SMS:          ${isTwilioConfigured() ? '✅ configured' : '⚠️  not configured (leads will log only)'}\n`);
+  console.log(`📨  Telegram bot:        ${isTelegramConfigured() ? '✅ configured' : '⚠️  not configured (leads will log only)'}\n`);
 });
